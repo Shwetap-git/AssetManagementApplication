@@ -81,7 +81,7 @@ public class AccountsServiceTest {
 
 	}
 
-	@Test
+	//@Test
 	public void transferAmount_concurrencyCheck() throws Exception {
 		
 		this.accountsService.createAccount(new Account("Id-012", new BigDecimal(1000)));
@@ -111,6 +111,30 @@ public class AccountsServiceTest {
 		t1.start(); t2.start(); t3.start(); t4.start();t5.start();
 		t1.join(); t2.join();t3.join();t4.join(); t5.join();	
 		assertThat(this.accountsService.getAccount("Id-012").getBalance()).isEqualTo(new BigDecimal(400));
+	}
+	
+	@Test
+	public void transferAmount_concurrencyDeadlockCheck() throws Exception {
+		
+		this.accountsService.createAccount(new Account("Id-015", new BigDecimal(1000)));
+		this.accountsService.createAccount(new Account("Id-016", new BigDecimal(1000)));
+		this.accountsService.createAccount(new Account("Id-017", new BigDecimal(1000)));
+		
+		Runnable runnable = ()->{
+			AmountTransferRequest req = new AmountTransferRequest("Id-015","Id-017",new BigDecimal(1000));
+			this.accountsService.transferAmount(req);
+		};
+		
+		Runnable runnable1 = ()->{
+			AmountTransferRequest req = new AmountTransferRequest("Id-016","Id-017",new BigDecimal(500));
+			this.accountsService.transferAmount(req);
+		};
+				
+		Thread t1 = new Thread(runnable);
+		Thread t2 = new Thread(runnable1);
+		t1.start(); t2.start();
+		t1.join(); t2.join();
+		assertThat(this.accountsService.getAccount("Id-017").getBalance()).isEqualTo(new BigDecimal(2500));
 	}
 	
 }

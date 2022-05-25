@@ -9,15 +9,14 @@ public interface AccountsRepository {
 
 	/**
 	 * @param account
-	 * @throws DuplicateAccountIdException
-	 * method to create a new account with given account detail
+	 * @throws DuplicateAccountIdException method to create a new account with given
+	 *                                     account detail
 	 */
 	void createAccount(Account account) throws DuplicateAccountIdException;
 
 	/**
 	 * @param accountId
-	 * @return Account information
-	 * method to get the account detail by accountId
+	 * @return Account information method to get the account detail by accountId
 	 */
 	Account getAccount(String accountId);
 
@@ -26,17 +25,24 @@ public interface AccountsRepository {
 	 */
 	void clearAccounts();
 
+	
 	/**
-	 * @param accountId
-	 * @param amount
-	 * method to withdraw the given amount from the given account
+	 * @param account
+	 * @return
 	 */
-	void withdrawAmount(String accountId, BigDecimal amount);
+	Account updateAccount(Account account);
 
 	/**
-	 * @param accountId
-	 * @param amount
-	 * method to withdraw the given amount from the given account
+	 * @param accountFrom
+	 * @param amount      method to withdraw the given amount from the given account
 	 */
-	void depositAmount(String accountId, BigDecimal amount);
+	/*
+	 * void withdrawAmount(Account accountFrom, BigDecimal amount);
+	 * 
+	 *//**
+		 * @param accountId
+		 * @param amount    method to withdraw the given amount from the given account
+		 *//*
+			 * void depositAmount(String accountId, BigDecimal amount);
+			 */
 }
