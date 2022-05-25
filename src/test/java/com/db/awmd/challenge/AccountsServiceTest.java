@@ -114,7 +114,7 @@ public class AccountsServiceTest {
 	}
 	
 	@Test
-	public void transferAmount_concurrencyDeadlockCheck() throws Exception {
+	public void transferAmount_concurrencyCheckForMultipleTransferToSingleAccount() throws Exception {
 		
 		this.accountsService.createAccount(new Account("Id-015", new BigDecimal(1000)));
 		this.accountsService.createAccount(new Account("Id-016", new BigDecimal(1000)));
@@ -135,6 +135,40 @@ public class AccountsServiceTest {
 		t1.start(); t2.start();
 		t1.join(); t2.join();
 		assertThat(this.accountsService.getAccount("Id-017").getBalance()).isEqualTo(new BigDecimal(2500));
+	}
+	
+	@Test
+	public void transferAmount_deadlockScenarioCheck() throws Exception {
+		
+		this.accountsService.createAccount(new Account("Id-018", new BigDecimal(1000)));
+		this.accountsService.createAccount(new Account("Id-019", new BigDecimal(1000)));
+		
+		Runnable runnable = ()->{
+			AmountTransferRequest req = new AmountTransferRequest("Id-018","Id-019",new BigDecimal(1000));
+			this.accountsService.transferAmount(req);
+		};
+		
+		Runnable runnable1 = ()->{
+			AmountTransferRequest req = new AmountTransferRequest("Id-019","Id-018",new BigDecimal(500));
+			this.accountsService.transferAmount(req);
+		};
+				
+		Thread t1 = new Thread(runnable);
+		Thread t2 = new Thread(runnable1);
+		t1.start(); t2.start();
+		t1.join(); t2.join();
+		assertThat(this.accountsService.getAccount("Id-018").getBalance()).isEqualTo(new BigDecimal(500));
+		assertThat(this.accountsService.getAccount("Id-019").getBalance()).isEqualTo(new BigDecimal(1500));
+	}
+	
+	@Test
+	public void transferAmounty_sameAccountTransfer() throws Exception {
+		String idFrom = "Id7-" + System.currentTimeMillis();
+		String idTo = idFrom;
+		Account accountFrom = new Account(idFrom, new BigDecimal(1000));
+		this.accountsService.createAccount(accountFrom);
+		this.accountsService.transferAmount(new AmountTransferRequest(idFrom, idTo, new BigDecimal(1000)));
+		assertThat(this.accountsService.getAccount(idFrom).getBalance()).isEqualTo(new BigDecimal(1000));
 	}
 	
 }

@@ -20,7 +20,7 @@ public class AccountsService {
 
 	@Getter
 	private final AccountsRepository accountsRepository;
-
+	
 	@Autowired
 	public AccountsService(AccountsRepository accountsRepository) {
 		this.accountsRepository = accountsRepository;
@@ -49,16 +49,23 @@ public class AccountsService {
 		String accountFromId = transferRequest.getAccountFrom();
 		String accountToId = transferRequest.getAccountTo();
 		BigDecimal amount = transferRequest.getAmount();
+		
 		Account accountFrom = getAccount(accountFromId);
 		Account accountTo = getAccount(accountToId);
-		// To ensure that multiple threads can not withdraw from same account simultaneously,
-		// a lock is acquired on the account to be withdrawn
-		// This ensures that multiple threads can withdraw from different accounts simultaneously
-		// Also, a lock is acquired on the payee account so that any other thread do not
-		// change the payee account state at this point
-		synchronized (accountFrom) {
+		Account first, second;
+		if(accountFromId.compareToIgnoreCase(accountToId) < 0) {
+			first = accountFrom;
+			second = accountTo;
+		}else {
+			first = accountTo;
+			second = accountFrom;
+		}
+		// To ensure that multiple threads can not withdraw from the same account
+		// simultaneously and that the accounts state are consistent,
+		// a lock is acquired on the payer and payee account based on accountId lexicographical order
+		synchronized (first) {
 			log.debug("1st lock acquired by "+ Thread.currentThread().getName());
-			synchronized (accountTo) {
+			synchronized (second) {
 				log.debug("2nd lock acquired by "+ Thread.currentThread().getName());
 				log.info("Initiating trasfer from account- "+accountFromId+" to account- "+accountToId);
 				withdrawAmount(accountFrom, amount);
