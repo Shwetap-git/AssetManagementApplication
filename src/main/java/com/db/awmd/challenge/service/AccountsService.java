@@ -42,8 +42,8 @@ public class AccountsService {
 	}
 
 	/**
-	 * @param transferRequest method to transfer the amount from payer to payee
-	 *                        account
+	 * @param transferRequest 
+	 * method to transfer the amount from payer to payee account
 	 */
 	public void transferAmount(AmountTransferRequest transferRequest) {
 		String accountFromId = transferRequest.getAccountFrom();

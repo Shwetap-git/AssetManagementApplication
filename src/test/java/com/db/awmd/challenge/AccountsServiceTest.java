@@ -81,7 +81,7 @@ public class AccountsServiceTest {
 
 	}
 
-	//@Test
+	@Test
 	public void transferAmount_concurrencyCheck() throws Exception {
 		
 		this.accountsService.createAccount(new Account("Id-012", new BigDecimal(1000)));
